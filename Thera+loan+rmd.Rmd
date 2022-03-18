@@ -1,0 +1,553 @@
+---
+title: "Thera bank personal loan"
+author: "Deborah"
+date: "13/05/2020"
+output: pdf_document
+---
+
+```{r}
+
+setwd("C:/Users/Osilade/Documents/PG- Data and Business/machine learning/Project/")
+```
+
+```{r}
+Thera_Bank_Loan<- read_excel("Thera Bank_Personal_Loan_Modelling-dataset-1.xlsx",+ sheet = "Bank_Personal_Loan_Modelling")
+
+View(Thera_Bank_Loan)
+
+nrow(Thera_Bank_Loan)
+ncol(Thera_Bank_Loan)
+
+summary(Thera_Bank_Loan)
+
+str(Thera_Bank_Loan)
+
+class(Thera_Bank_Loan)
+
+colnames(Thera_Bank_Loan)
+
+
+```
+
+
+
+```{r}
+library(DataExplorer)
+introduce(Thera_Bank_Loan)
+plot_str(Thera_Bank_Loan)
+plot_missing(Thera_Bank_Loan)
+##says there are barely any missing variables 
+## missing rows of 0.36%
+plot_intro(Thera_Bank_Loan)
+##says 100% continious column and 100% complete rows
+plot_bar(Thera_Bank_Loan)
+## shows 5 out of 14 variables 
+##
+
+```
+
+```{r}
+colnames(Thera_Bank_Loan)<-make.names(colnames(Thera_Bank_Loan))
+Thera_Bank_Loan=Thera_Bank_Loan[-c(3,5,6)]
+
+## trimming the dataaset to remove irrevelant column
+## There are extereme values in ID,Income,ccAvg, Mortgage. 
+
+##grouped into customer demographic - age,income,id, zipcode, experience, family, education 
+##customer relationship - mortgage, securities account, CD account ,CC Avg 
+##customer response - personal loan, online, credit card 
+
+```
+
+
+#insights from the dataset 
+```{r}
+sum(Thera_Bank_Loan$Personal.Loan=='1')
+sum(Thera_Bank_Loan$Personal.Loan =='0')
+sum(Thera_Bank_Loan$CreditCard =='1')
+sum(Thera_Bank_Loan$CreditCard =='0')
+sum(Thera_Bank_Loan$Securities.Account=='1')
+sum(Thera_Bank_Loan$Securities.Account=='0')
+sum(Thera_Bank_Loan$Online =='1')
+sum(Thera_Bank_Loan$Online=='0')
+sum(Thera_Bank_Loan$CD.Account =='1')
+sum(Thera_Bank_Loan $CD.Account=='0')
+sum(Thera_Bank_Loan $Mortgage== '0')
+     
+```
+
+
+
+## conducting univirate analysis 
+```{r}
+attach(Thera_Bank_Loan)
+colnames(Thera_Bank_Loan)
+
+boxplot(Personal.Loan, horizontal = TRUE , col = 'blue',main = 'boxplot of personal loan')
+boxplot(Income..in.K.month. , horizontal = TRUE, col= 'red', main = 'boxplot of income')
+boxplot( Mortgage ,horizontal = TRUE, col = 'dark green', main = 'boxplot of Mortgage')
+boxplot(CCAvg, horizontal = TRUE, col= 'dark green', main = 'boxplot of Credit Card Average')
+boxplot(Age..in.years., horizontal = TRUE, Col = 'dark green', main= 'boxplot of CCAvg')
+boxplot(Education, horizontal = TRUE, Col = 'dark green', main= 'boxplot of education')
+
+##shows extreme values in the data,towards the right pushing the boxplot towards the left.
+```
+
+##Checking for skewness of data 
+```{r}
+colnames(Thera_Bank_Loan)
+
+hist(Personal.Loan)
+##skewed to the right
+hist(Income..in.K.month)
+##skewed to the right 
+hist(CCAvg)
+##skewe to the right 
+hist(Mortgage)
+##skewed to the right
+hist(Age..in.years.)
+## almost a normal distribtion
+hist(CreditCard)
+hist(Online)
+hist(Securities.Account)
+hist(Education)
+
+
+```
+
+
+## barplots
+```{r}
+plot_bar(Personal.Loan)
+plot_bar(Online)
+plot_bar(Education)
+
+##No discrete features found
+
+Education <- as.factor(Education)
+
+plot_bar(Securities.Account)
+##check missing values for family members
+
+plot_density(Mortgage)
+plot_density(Income..in.K.month)
+
+#no continous features
+plot_density(CCAvg)
+
+plot_density(Securities.Account)
+##no continous feature
+
+```
+
+##working with mean
+```{r}
+##checking the IQR
+Mortgage_IQR <- IQR(Mortgage)
+print(Mortgage_IQR)
+
+CreditCard_IQR <- IQR(CreditCard)
+print(CreditCard_IQR)
+
+Personal_loan_IQR <- IQR(Personal.Loan)
+print(Personal_IQR)
+
+
+#checking the sd
+Mortgage_SD <- sd(Mortgage)
+Personal_Loan_SD <- sd(Personal.Loan)
+CreditCard_SD <- sd(CreditCard)
+Education_SD <- sd(Education)
+
+```
+
+##Performing Bivirate analysis 
+```{r}
+
+plot_correlation(Thera_Bank_Loan)
+
+## income, personal loan , credit card account
+
+# Check the significance level of these correlations
+attach(Thera_Bank_Loan)
+
+
+cor.test(Income..in.K.month.,CCAvg)$p.value
+#0
+cor.test(Personal.Loan,Income..in.K.month.)$p.value
+# 3.560296e-318
+cor.test(Securities.Account,CD.Account)$p.value
+#3.859242e-117
+cor.test(Personal.Loan,CD.Account)$p.value
+#1.278403e-116
+
+# ** All the p.valuess << 0.001 indicating these correlations are significant
+```
+
+```{r}
+rpivotTable::
+rpivotTable(Thera_Bank_Loan)
+```
+
+
+#clustering
+```{r}
+colnames(Thera_Bank_Loan)
+head(Thera_Bank_Loan,10)
+Thera_distMatrix = dist(x=Thera_Bank_Loan[,1:11], method = "euclidean") 
+print(Thera_distMatrix,digits=3)
+
+# ** All the columns values are on the same scale therefore scaling not required 
+Thera.Scaled = scale(Thera_Bank_Loan [,1:11])
+View(Thera.Scaled)
+
+#Calculate Euclidean Distance between data points
+Thera_bank_distance = dist(x=Thera.Scaled, method = "euclidean") 
+print(Thera_bank_distance, digits = 3)
+
+```
+
+
+# setting a seed for the cluster
+```{r}
+
+seed=1000
+set.seed(seed) 
+
+#since kmeans uses a randomized starting point for cluster centroids
+
+
+```
+
+```{r}
+
+library(NbClust)
+Thera_loan_Nc <- NbClust(Thera_Bank_Loan[,-1], min.nc = 2, max.nc = 6, method = "kmeans")
+
+## According to the majority rule, the best number of clusters is  4 
+### * 7 proposed 2 as the best number of clusters 
+## * 2 proposed 3 as the best number of clusters 
+## * 13 proposed 4 as the best number of clusters 
+
+table(Thera_loan_Nc$Best.n[1, ])
+```
+# Create clusters for k=4, k=3 and k=2 for comparative analysis
+```{r}
+set.seed(seed)
+clust4 = kmeans(x=Thera_Bank_Loan, centers = 4, nstart = 5)
+print(clust4)
+
+clust3 = kmeans(x=Thera_Bank_Loan, centers = 3, nstart = 5)
+clust3
+clust2 = kmeans(x=Thera_Bank_Loan, centers = 2, nstart = 5)
+clust2
+```
+# Visualise clusters 
+```{r}
+library(factoextra)
+k_clust4 = fviz_cluster(list(data = Thera_Bank_Loan,cluster = clust4 $cluster)) + ggtitle("k = 4")
+k_clust4
+
+k_clust3 = fviz_cluster(list(data = Thera_Bank_Loan [, -1],cluster = clust3 $cluster)) +ggtitle("k = 3")
+k_clust3
+
+k_clust2 = fviz_cluster(list(data = Thera_Bank_Loan [, -1],cluster = clust2 $cluster)) + ggtitle("k = 2")
+k_clust2
+
+```
+
+```{r}
+library(gridExtra)
+grid.arrange( k_clust4,k_clust3, k_clust2, nrow = 2)
+
+```
+# Create cluster profiles
+```{r}
+# k = 4
+aggr_mean_4<- aggregate(Thera_Bank_Loan[, -1], list(clust4$cluster), mean)
+k4cluster.profile <- data.frame(Cluster = aggr_mean_4[, 1],
+                               no_of_customers= 
+                                 as.vector(table(clust4$cluster)),
+                               aggr_mean_4[, -1])
+print(k4cluster.profile)
+```
+# k = 3
+```{r}
+
+aggr_mean_3 <- aggregate(Thera_Bank_Loan[, -1], list(clust3 $cluster), mean)
+k3cluster.profile <- data.frame(Cluster = aggr_mean_3[, 1],
+                                no_of_customers = 
+                                  as.vector(table(clust3 $cluster)),
+                                aggr_mean_3[, -1])
+k3cluster.profile
+
+```
+# k = 2
+```{r}
+
+aggr_mean_2 <- aggregate(Thera_Bank_Loan[, -1], list(clust2$cluster), mean)
+k4cluster.profile <- data.frame(Cluster = aggr_mean_2[, 1],
+                                no_of_customers =
+                                  as.vector(table(clust2$cluster)),
+                                aggr_mean_2[, -1])
+k4cluster.profile
+```
+
+#CART
+#dividing into Train and test data
+```{r}
+library(caTools)
+set.seed(200) #Input any random number
+Thera_Bank_Loan <- Thera_Bank_Loan[-c(3,5,6)]
+colnames(Thera_Bank_Loan)
+Thera_data= sample((1:nrow(Thera_Bank_Loan)), round(nrow(Thera_Bank_Loan)*0.7, 0), replace = F)
+Thera_data
+Thera_Train = Thera_Bank_Loan[Thera_data,]
+dim(Thera_Train)
+Thera_Test = Thera_Bank_Loan[-Thera_data,]
+dim(Thera_Test)
+```
+
+
+```{r}
+summary(Thera_Train)
+summary(Thera_Test)
+```
+
+
+#Checing the delinquency distribution
+```{r}
+attach(Thera_Train)
+table(Personal.Loan)
+```
+
+#Setting the control parameters
+```{r}
+library(rpart)
+Thera_ctrl_parameter = rpart.control( minbucket = 10, cp = 0, xval = 5)
+
+```
+
+
+#Building the CART model
+```{r}
+Thera_Cart_Model<- rpart(formula = Personal.Loan~., data = Thera_Train, 
+                         method = "class",control = Thera_ctrl_parameter)
+Thera_Cart_Model
+```
+
+#plotting cart model 
+```{r}
+
+library(rattle)
+fancyRpartPlot(Thera_Cart_Model, cex= 0.6)
+
+```
+
+##pruning to see errors
+```{r}
+
+printcp(Thera_Cart_Model)
+plotcp(Thera_Cart_Model)
+
+Thera_ptree = prune(Thera_Cart_Model, cp=0 ,"CP")
+printcp(Thera_Cart_Model)
+
+Thera_ptree
+fancyRpartPlot(Thera_ptree)
+
+```
+#Model Performance
+```{r}
+library(ROCR)
+library(StatMeasures)
+
+
+#Scoring/Predicting the training dataset
+Thera_predict.class <- predict(Thera_Cart_Model, Thera_Train , type="class")
+Thera_predict.score <- predict(Thera_Cart_Model, Thera_Train)
+head(Thera_Train)
+
+```
+
+```{r}
+#Checking the classification error
+
+library(ROCR)
+library(ineq)
+
+with(Thera_Train, table(Personal.Loan, Thera_predict.class))
+nrow(Thera_Train)
+```
+
+```{r}
+#Building the ROC curve and lift charts
+Personal.Loan <- as.factor(Personal.Loan)
+Thera_pred <- prediction(Thera_predict.score[,2],Personal.Loan)
+Thera_perf <- performance(Thera_pred, "tpr", "fpr")
+plot(Thera_perf,main = "ROC curve")
+
+```
+
+```{r}
+#Model validation parameters
+KS <- max(attr(Thera_perf, 'y.values')[[1]]-attr(Thera_perf, 'x.values')[[1]])
+auc <- performance(Thera_pred,"auc"); 
+auc <- as.numeric(auc@y.values)
+
+auc
+KS
+```
+
+```{r}
+
+# Scoring test sample and validating the same
+Thera_test_predict.class <- predict(Thera_Cart_Model, Thera_Test, type="class")
+Thera_test_t$predict.score <- predict(Thera_Cart_Model, Thera_Test)
+head(Thera_Test)
+
+with(Thera_Test, table(Online,Thera_test_predict.class))
+nrow(Thera_Test)
+
+```
+
+#random forest
+
+
+```{r}
+Thera_Train$Personal.Loan <- as.factor(Thera_Train$Personal.Loan)
+Thera_Test$Personal.Loan <- as.factor(Thera_Test$Personal.Loan)
+
+
+print (sum(Thera_Train$Personal.Loan=='1')/nrow(Thera_Train))
+```
+
+
+```{r}
+set.seed(1000)
+
+library(randomForest)
+
+Thera_rndForest <- randomForest(Thera_Train$Personal.Loan~ ., data = Thera_Train,ntree=501,mtry=3, nodesize=5,importance=TRUE) 
+
+##Print the model to see the OOB and error rate
+print(Thera_rndForest)
+```
+
+
+##Plot the RF to know the optimum number of trees
+```{r}
+plot(Thera_rndForest)  
+```
+
+##Identify the importance of the variables
+```{r}
+randomForest::importance(Thera_rndForest)
+```
+
+##Tune up the RF model to find out the best mtry
+```{r}
+seed=1000
+set.seed(seed)
+Thera_tune_forest = tuneRF(x=Thera_Train[,-c(7)],y=Thera_Train$Personal.Loan,mtryStart =3,stepfactor=1.5,ntreeTry = 51,improve =TRUE,nodesize=10,trace=TRUE,plot=TRUE,doBest=TRUE,importance=TRUE)
+```
+
+##Build the refined RF model
+```{r}
+Thera_ref_forest = randomForest(Thera_Train$Personal.Loan~.,data=Thera_Train,ntree=51,mtry=3,nodesize=10,importance=TRUE)
+print(Thera_ref_forest)
+
+```
+
+
+
+
+```{r}
+library(caret)
+library(e1071)
+```
+
+#Lets make predictions on the training data and measure the prediction error rate on train as well as test data set
+
+```{r}
+Thera_random_predict = predict(Thera_ref_forest,data=Thera_Train,type="class")
+Thera_random_prob = predict(Thera_ref_forest,data=Thera_Train,type="prob")[,"1"]
+```
+
+##using the test data to predict
+```{r}
+Thera_test_prediction= predict(Thera_ref_forest,Thera_Test,type="class")
+
+Thera_test_prob = predict(Thera_ref_forest,Thera_Test,type="prob")[,"1"]
+
+```
+
+#Confusion matrix
+```{r}
+
+RF_CM_train = table(Thera_Train$Personal.Loan,Thera_random_predict)
+print(RF_CM_train)
+
+RF_CM_test = table(Thera_Test$Personal.Loan,Thera_test_prediction)
+print(RF_CM_test)
+
+```
+
+#Error rate
+```{r}
+(RF_CM_train[1,2]+RF_CM_train[2,1])/nrow(Thera_Train)
+(RF_CM_test[1,2]+RF_CM_test[2,1])/nrow(Thera_Test)
+
+```
+
+#Accuracy
+```{r}
+(RF_CM_train[1,1]+RF_CM_train[2,2])/nrow(Thera_Train)
+(RF_CM_test[1,1]+RF_CM_test[2,2])/nrow(Thera_Test)
+```
+
+```{r}
+library(caret)
+library(e1071)
+```
+
+#Lets make predictions on the training data and measure the prediction error rate on train as well as test data set
+
+```{r}
+Thera_random_predict = predict(Thera_ref_forest,data=Thera_Train,type="class")
+Thera_random_prob = predict(Thera_ref_forest,data=Thera_Train,type="prob")[,"1"]
+```
+
+##using the test data to predict
+```{r}
+Thera_test_prediction= predict(Thera_ref_forest,Thera_Test,type="class")
+
+Thera_test_prob = predict(Thera_ref_forest,Thera_Test,type="prob")[,"1"]
+
+```
+
+#Confusion matrix
+```{r}
+
+RF_CM_train = table(Thera_Train$Personal.Loan,Thera_random_predict)
+print(RF_CM_train)
+
+RF_CM_test = table(Thera_Test$Personal.Loan,Thera_test_prediction)
+print(RF_CM_test)
+
+```
+
+#Error rate
+```{r}
+(RF_CM_train[1,2]+RF_CM_train[2,1])/nrow(Thera_Train)
+(RF_CM_test[1,2]+RF_CM_test[2,1])/nrow(Thera_Test)
+
+```
+
+#Accuracy
+```{r}
+(RF_CM_train[1,1]+RF_CM_train[2,2])/nrow(Thera_Train)
+(RF_CM_test[1,1]+RF_CM_test[2,2])/nrow(Thera_Test)
+```
+
+
