@@ -378,21 +378,16 @@ print(Thera_rndForest)
 
 
 ##Plot the RF to know the optimum number of trees
-```{r}
 plot(Thera_rndForest)  
-```
 
 ##Identify the importance of the variables
-```{r}
+
 randomForest::importance(Thera_rndForest)
-```
 
 ##Tune up the RF model to find out the best mtry
-```{r}
 seed=1000
 set.seed(seed)
 Thera_tune_forest = tuneRF(x=Thera_Train[,-c(7)],y=Thera_Train$Personal.Loan,mtryStart =3,stepfactor=1.5,ntreeTry = 51,improve =TRUE,nodesize=10,trace=TRUE,plot=TRUE,doBest=TRUE,importance=TRUE)
-```
 
 ##Build the refined RF model
 
@@ -411,15 +406,11 @@ Thera_random_predict = predict(Thera_ref_forest,data=Thera_Train,type="class")
 Thera_random_prob = predict(Thera_ref_forest,data=Thera_Train,type="prob")[,"1"]
 
 ##using the test data to predict
-```{r}
 Thera_test_prediction= predict(Thera_ref_forest,Thera_Test,type="class")
 
 Thera_test_prob = predict(Thera_ref_forest,Thera_Test,type="prob")[,"1"]
 
-```
-
 #Confusion matrix
-```{r}
 
 RF_CM_train = table(Thera_Train$Personal.Loan,Thera_random_predict)
 print(RF_CM_train)
@@ -427,43 +418,33 @@ print(RF_CM_train)
 RF_CM_test = table(Thera_Test$Personal.Loan,Thera_test_prediction)
 print(RF_CM_test)
 
-```
-
 #Error rate
-```{r}
+
 (RF_CM_train[1,2]+RF_CM_train[2,1])/nrow(Thera_Train)
 (RF_CM_test[1,2]+RF_CM_test[2,1])/nrow(Thera_Test)
 
-```
-
 #Accuracy
-```{r}
+
 (RF_CM_train[1,1]+RF_CM_train[2,2])/nrow(Thera_Train)
 (RF_CM_test[1,1]+RF_CM_test[2,2])/nrow(Thera_Test)
-```
 
-```{r}
 library(caret)
 library(e1071)
-```
+
 
 #Lets make predictions on the training data and measure the prediction error rate on train as well as test data set
 
-```{r}
 Thera_random_predict = predict(Thera_ref_forest,data=Thera_Train,type="class")
 Thera_random_prob = predict(Thera_ref_forest,data=Thera_Train,type="prob")[,"1"]
-```
+
 
 ##using the test data to predict
-```{r}
+
 Thera_test_prediction= predict(Thera_ref_forest,Thera_Test,type="class")
 
 Thera_test_prob = predict(Thera_ref_forest,Thera_Test,type="prob")[,"1"]
 
-```
-
 #Confusion matrix
-```{r}
 
 RF_CM_train = table(Thera_Train$Personal.Loan,Thera_random_predict)
 print(RF_CM_train)
@@ -471,19 +452,16 @@ print(RF_CM_train)
 RF_CM_test = table(Thera_Test$Personal.Loan,Thera_test_prediction)
 print(RF_CM_test)
 
-```
 
 #Error rate
-```{r}
 (RF_CM_train[1,2]+RF_CM_train[2,1])/nrow(Thera_Train)
 (RF_CM_test[1,2]+RF_CM_test[2,1])/nrow(Thera_Test)
 
-```
 
 #Accuracy
-```{r}
+
 (RF_CM_train[1,1]+RF_CM_train[2,2])/nrow(Thera_Train)
 (RF_CM_test[1,1]+RF_CM_test[2,2])/nrow(Thera_Test)
-```
+
 
 
